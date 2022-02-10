@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="//cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.5/radial/gauge.min.js"></script>
+<script src="//cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.5/linear/gauge.min.js"></script>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript">
+google.charts.load('current', {
+  'packages': ['line','corechart']
+});
+google.charts.setOnLoadCallback(drawChart);
+
+function dateReviver(key, value) {
+  if (isSerializedDate(value)) {
+    return (new Date(value));
+  }
+  // If it's not a date-string, we want to return the value as-is. If we fail to return
+  // a value, it will be omitted from the resultant data structure.
+  return (value);
+}
+
+// I determine if the given value is a string that matches the serialized-date pattern.
+function isSerializedDate(value) {
+  var datePattern = /^\d{4}-\d{1,2}-\d{1,2}T\d{1,2}:\d{1,2}:\d{1,2}$/;
+  return (isString(value) && datePattern.test(value));
+}
+
+// I determine if the given value is a String.
+function isString(value) {
+  return ({}.toString.call(value) === "[object String]");
+}
+
+function drawChart() {
+
+  var button = document.getElementById('change-speed');
+  var jsonData = $.ajax({
+    url: "getrows.php",
+    dataType: "json",
+    async: false
+  }).responseText;
+  var jsonPData = $.ajax({
+    url: "getprows.php",
+    dataType: "json",
+    async: false
+  }).responseText;
+  var result = JSON.parse(jsonData, dateReviver);
+  var presult = JSON.parse(jsonPData, dateReviver);
+  var data = new google.visualization.DataTable(result);
+  var pdata = new google.visualization.DataTable(presult);
+  var numberOfRows = data.getNumberOfRows() - 1;
+  var timestamp = data.getValue(numberOfRows, 0);
+  var windspeed = data.getValue(numberOfRows, 1);
+  var windspeedB = data.getValue(numberOfRows, 2);
+  var direction = data.getValue(numberOfRows, 5);
+  var temp = data.getValue(numberOfRows, 6);
+  var pressure = data.getValue(numberOfRows, 7);
+  var colors = [
+    "#ffffff",
+    "#6400fe",
+    "#0032fe",
+    "#0064fe",
+    "#00c8fe",
+    "#00e600",
+    "#b8ff61",
+    "#fee100",
+    "#e66400",
+    "#ff0000",
+    "#fe0096",
+    "#ff51b9",
+    "#ff95d5"
+  ];
+
+
+  data.insertColumn(3, {
+    type: 'string',
+    role: 'style'
+  });
+  data.insertColumn(6, {
+    type: 'string',
+    role: 'style'
+  });
+
+  for (i = 0; i <= numberOfRows; i++) {
+    color = "color: " + colors[data.getValue(i, 2)];
+    data.setValue(i, 3, color);
+  }
+  for (i = 0; i <= numberOfRows; i++) {
+    color = "color: " + colors[data.getValue(i, 5)];
+    data.setValue(i, 6, color);
+  }
+  
+  var windviewbft = new google.visualization.DataView(data);
+  windviewbft.hideColumns([1, 4, 6, 7, 8, 9]);
+  //windviewbft.hideRows(0,39);
+  
+  var windviewknt = new google.visualization.DataView(data);
+  windviewknt.hideColumns([2, 3, 5, 6, 7, 8, 9]);
+  
+  
+  var windoptionsbft = {
+    title: 'Windkracht in Beaufort',
+	backgroundColor: '#ffffff',
+	connectSteps: false,
+	legend: 'none',
+	vAxis: {
+      textPosition: 'out',
+	  ticks: [2,4,6,8,10,12],
+	  viewWindow: {
+              min: 0,
+              max: 12
+            },
+	  gridlines: {
+        //color: 'none'
+      }
+    },
+    hAxis: {
+      title: 'Laatste uur',
+      type: 'category',
+	  textPosition: 'none'
+    },
+    series: {
+	  0: {
+        areaOpacity: 0.3
+      },
+      1: {
+        areaOpacity: 0.0
+      }
+    }
+  };
+  
+  var windoptionsknt = {
+    title: 'Windsnelheid in knopen',
+	backgroundColor: '#ffffff',
+	legend: 'none',
+	vAxis: {
+	  textPosition: 'out',
+	  //format: '##',
+	  gridlines: {
+        //color: 'none'
+      }
+    },
+    hAxis: {
+      title: 'Laatste uur',
+      type: 'category',
+	  textPosition: 'none'
+    }
+  };
+  
+  
+  
+  var envview = new google.visualization.DataView(pdata);
+  //envview.hideColumns([1, 2, 3, 4, 5, 6, 7,8]);
+   
+  var envoptions = {
+    title: 'Luchtdruk',
+	backgroundColor: '#ffffff',
+	legend: 'none',
+	vAxis: {
+	  textPosition: 'out',
+	  format: '####',
+	  viewWindow: {
+        //min: 990,
+        max: 1030
+      },
+      gridlines: {
+        color: 'none'
+      }
+    },
+    hAxis: {
+      title: 'Laatste 24 uur',
+      type: 'category',
+	  textPosition: 'none'
+    }
+  };
+	
+	
+  var format = {
+    weekday: "long",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  };
+
+  document.getElementById("timestamp").innerHTML = "Situatie op " + timestamp.toLocaleTimeString("nl-nl", format);
+  //document.getElementById("windspeed").innerHTML = windspeedB + " Bft / " + windspeed + " kn";
+  //document.getElementById("temp").innerHTML = temp + "°C " + pressure + " hPa";
+
+  function drawWindChartBFT() {
+    var windchartbft = new google.visualization.SteppedAreaChart(document.getElementById('chart_div'));
+    windchartbft.draw(windviewbft, windoptionsbft);
+	button.innerText = 'Knopen';
+    button.onclick = drawWindChartKNT;
+  }
+  drawWindChartBFT();
+  
+  function drawWindChartKNT() {
+    var windchartknt = new google.visualization.LineChart(document.getElementById('chart_div'));
+    windchartknt.draw(windviewknt, windoptionsknt);
+	button.innerText = 'Bft';
+    button.onclick = drawWindChartBFT;
+  }
+    
+  
+  var envchart = new google.visualization.LineChart(document.getElementById('chart_div_env'));
+  envchart.draw(envview, envoptions);
+
+  
+  var gauge = new RadialGauge({
+    renderTo: 'compass',
+    width: 150,
+	minValue: 0,
+    maxValue: 360,
+    majorTicks: [
+      "N",
+      "NO",
+      "O",
+      "ZO",
+      "Z",
+      "ZW",
+      "W",
+      "NW",
+      "N"
+    ],
+    minorTicks: 22.5,
+    ticksAngle: 360,
+    startAngle: 180,
+    strokeTicks: false,
+    highlights: false,
+    colorPlate: "#222",
+    colorMajorTicks: "#f5f5f5",
+    colorMinorTicks: "#ddd",
+    colorNumbers: "#ccc",
+    colorNeedle: "rgba(240, 128, 128, 1)",
+    colorNeedleEnd: "rgba(255, 160, 122, .9)",
+    valueBox: false,
+    valueTextShadow: false,
+    colorCircleInner: "#fff",
+    colorNeedleCircleOuter: "#ccc",
+    needleCircleSize: 15,
+    needleCircleOuter: false,
+    animationRule: "linear",
+    needleType: "line",
+    needleStart: 75,
+    needleEnd: 99,
+    needleWidth: 3,
+    borders: true,
+    borderInnerWidth: 0,
+    borderMiddleWidth: 0,
+    borderOuterWidth: 10,
+    colorBorderOuter: "#ccc",
+    colorBorderOuterEnd: "#ccc",
+    colorNeedleShadowDown: "#222",
+    borderShadowWidth: 0,
+    //animationTarget: "plate",
+    animationDuration: 1500,
+    value: direction,
+    animateOnInit: true
+  }).draw();
+  
+  var temp_gauge = new LinearGauge({
+    renderTo: 'temperature',
+    width: 60,
+    height: 150,
+    units: "°C",
+    minValue: -10,
+    valueBox: true,
+    maxValue: 50,
+    majorTicks: [
+        "-10",
+        "0",
+        "10",
+        "20",
+        "30",
+        "40",
+        "50"
+    ],
+    minorTicks: 5,
+    strokeTicks: true,
+	highlights: [
+		{
+            "from": -10,
+            "to": 3,
+            "color": "rgba(0,0, 255, .3)"
+        },
+        {
+            "from": 25,
+            "to": 50,
+            "color": "rgba(200, 50, 50, .75)"
+        }
+    ],
+    colorPlate: "#fff",
+    borderShadowWidth: 0,
+    borders: false,
+    needleType: "arrow",
+    needleWidth: 2,
+    needleCircleSize: 7,
+    needleCircleOuter: true,
+    needleCircleInner: false,
+    animationDuration: 1500,
+    animationRule: "linear",
+    barWidth: 10,
+    value: temp
+}).draw();
+}
+</script>
+<head>
+<link rel="stylesheet" type="text/css" href="wstw.css">
+<title>Situatie@DenBocht</title>
+</head>
+<body>
+<div class="container">
+	<div id=header class="header">
+		<h2 id="timestamp"></h2>
+	</div>
+	<div id=dashboard class="dashboard">
+		<canvas id=temperature></canvas>
+		<!-- <h1 id="windspeed"></h1>
+		<h1 id="temp"></h1> -->
+	</div>
+	<div id="chart_div" class="chart"></div>
+	<div id="chart_div_env" class="chartenv"></div>
+	<div id="div_compass" class="compass">
+		<canvas id=compass></canvas>
+	</div>
+	<div id=div_button class=button_class> 
+	<button id="change-speed" class=button_class style="font-size:11px">Knopen</button>
+	</div>
+</div>
+</body>
+</html>

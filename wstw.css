@@ -1,0 +1,92 @@
+body {
+  margin: 40px;
+  font-family: Bitter, serif;
+  font-size: 17px;
+  
+}
+
+h2,h1 {
+font-size: 17px;
+}
+
+.container {
+  width: 510px;
+  border: 1px solid #ffffff;
+  border-radius: 1em;
+  margin: 40px;
+  background-color: #ffffff;
+  color: #000;
+}
+
+ .container {
+	  display: -ms-grid;
+	  -ms-grid-columns: 250px 250px;
+	  -ms-grid-rows: auto;
+	}
+
+ .header {
+      -ms-grid-row:1;
+	  -ms-grid-column-span:2;
+	  -ms-grid-column-align: center;
+	}
+
+	.compass {
+	  -ms-grid-row:2;
+	  -ms-grid-column:1;
+	  -ms-grid-column-span:1;
+	}
+
+	.dashboard {
+	  -ms-grid-row:2;
+	  -ms-grid-column:2;
+	  -ms-grid-column-span:1;
+	}
+
+	.chart {
+	  -ms-grid-row:3;
+	  -ms-grid-column-span:2;
+	  -ms-grid-column-align: center;
+	}
+	
+	.button_class {
+	  -ms-grid-row:4;
+	  -ms-grid-column-span:2;
+	}
+	
+	.chartenv {
+	  -ms-grid-row:5;
+	  -ms-grid-column-span:2;
+	  -ms-grid-column-align: center;
+	}
+ 
+ @supports (display: grid) {
+	.container {
+	  display: grid;
+	  grid-gap: 10px;
+	  grid-template-columns: 250px 250px;
+	  grid-template-areas: "header  header" "compass dashboard" "chart chart" "button button" "chartenv chartenv";
+	}
+
+	.header {
+	  grid-area: header;
+	}
+
+	.compass {
+	  grid-area: compass;
+	}
+
+	.dashboard {
+	  grid-area: dashboard;
+	}
+
+	.chart {
+	  grid-area: chart;
+	}
+	
+	.button_class {
+	  grid-area: button;
+	}
+	.chartenv {
+	  grid-area: chartenv;
+	}
+}
