@@ -160,7 +160,7 @@ function drawChart() {
 	  format: '####',
 	  viewWindow: {
         //min: 990,
-        max: 1030
+        max: 1050
       },
       gridlines: {
         color: 'none'
@@ -185,7 +185,7 @@ function drawChart() {
 
   document.getElementById("timestamp").innerHTML = "Situatie op " + timestamp.toLocaleTimeString("nl-nl", format);
   //document.getElementById("windspeed").innerHTML = windspeedB + " Bft / " + windspeed + " kn";
-  //document.getElementById("temp").innerHTML = temp + "°C " + pressure + " hPa";
+  //document.getElementById("temp").innerHTML = temp + "ï¿½C " + pressure + " hPa";
 
   function drawWindChartBFT() {
     var windchartbft = new google.visualization.SteppedAreaChart(document.getElementById('chart_div'));
@@ -263,7 +263,7 @@ function drawChart() {
     renderTo: 'temperature',
     width: 60,
     height: 150,
-    units: "°C",
+    units: "ï¿½C",
     minValue: -10,
     valueBox: true,
     maxValue: 50,
